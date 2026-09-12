@@ -1,0 +1,50 @@
+import type { Dimension, DimensionMeta, Question } from '@/types'
+
+export const scaleLabels = ['非常不同意', '不同意', '不确定', '同意', '非常同意'] as const
+
+// Big Five items are concise Chinese adaptations of public-domain IPIP Big-Five markers.
+// They form an educational pilot implementation, not a translated or validated scale.
+export const questions: Question[] = [
+  { id: 'bfi_o1', order: 1, section: 'personality', construct: 'Big Five / Openness', dimension: 'openness', reverse: false, text: '我很容易对新的想法产生兴趣。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_o2', order: 2, section: 'personality', construct: 'Big Five / Openness', dimension: 'openness', reverse: false, text: '我喜欢思考抽象的问题。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_o3', order: 3, section: 'personality', construct: 'Big Five / Openness', dimension: 'openness', reverse: true, text: '我对艺术或创意活动兴趣不大。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_o4', order: 4, section: 'personality', construct: 'Big Five / Openness', dimension: 'openness', reverse: true, text: '我倾向于避开不熟悉的观点或做法。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_c1', order: 5, section: 'personality', construct: 'Big Five / Conscientiousness', dimension: 'conscientiousness', reverse: false, text: '我会提前规划并按步骤完成任务。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_c2', order: 6, section: 'personality', construct: 'Big Five / Conscientiousness', dimension: 'conscientiousness', reverse: false, text: '我会认真处理细节。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_c3', order: 7, section: 'personality', construct: 'Big Five / Conscientiousness', dimension: 'conscientiousness', reverse: true, text: '我经常拖到最后一刻才处理重要任务。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_c4', order: 8, section: 'personality', construct: 'Big Five / Conscientiousness', dimension: 'conscientiousness', reverse: true, text: '我常常把事情弄得杂乱无章。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_e1', order: 9, section: 'personality', construct: 'Big Five / Extraversion', dimension: 'extraversion', reverse: false, text: '我在和他人交流时通常很有活力。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_e2', order: 10, section: 'personality', construct: 'Big Five / Extraversion', dimension: 'extraversion', reverse: false, text: '我很容易主动开始一段对话。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_e3', order: 11, section: 'personality', construct: 'Big Five / Extraversion', dimension: 'extraversion', reverse: true, text: '在社交场合里，我通常保持在背景中。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_e4', order: 12, section: 'personality', construct: 'Big Five / Extraversion', dimension: 'extraversion', reverse: true, text: '我很少觉得自己是一个健谈的人。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_a1', order: 13, section: 'personality', construct: 'Big Five / Agreeableness', dimension: 'agreeableness', reverse: false, text: '我会关注他人的感受。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_a2', order: 14, section: 'personality', construct: 'Big Five / Agreeableness', dimension: 'agreeableness', reverse: false, text: '我愿意为解决分歧寻找合作方式。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_a3', order: 15, section: 'personality', construct: 'Big Five / Agreeableness', dimension: 'agreeableness', reverse: true, text: '我很容易挑别人的毛病。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_a4', order: 16, section: 'personality', construct: 'Big Five / Agreeableness', dimension: 'agreeableness', reverse: true, text: '如果我认为自己正确，我不太在意别人是否感到被冒犯。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_n1', order: 17, section: 'personality', construct: 'Big Five / Emotional stability', dimension: 'neuroticism', reverse: false, text: '遇到压力时，我容易紧张或担心。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_n2', order: 18, section: 'personality', construct: 'Big Five / Emotional stability', dimension: 'neuroticism', reverse: false, text: '我常常会为可能出错的事情担忧。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_n3', order: 19, section: 'personality', construct: 'Big Five / Emotional stability', dimension: 'neuroticism', reverse: true, text: '即使事情不顺利，我也通常能保持平静。', source: 'IPIP marker adaptation' },
+  { id: 'bfi_n4', order: 20, section: 'personality', construct: 'Big Five / Emotional stability', dimension: 'neuroticism', reverse: true, text: '我很少因为小事感到不安。', source: 'IPIP marker adaptation' },
+  { id: 'ai_b1', order: 21, section: 'attitude', construct: 'AI perceived usefulness', dimension: 'aiBenefit', reverse: false, text: 'AI 工具能帮助我更快理解复杂知识。', source: 'Project exploratory item' },
+  { id: 'ai_b2', order: 22, section: 'attitude', construct: 'AI perceived usefulness', dimension: 'aiBenefit', reverse: false, text: 'AI 能激发我提出更多解决问题的思路。', source: 'Project exploratory item' },
+  { id: 'ai_b3', order: 23, section: 'attitude', construct: 'AI perceived usefulness', dimension: 'aiBenefit', reverse: true, text: '在学习或研究中使用 AI 通常弊大于利。', source: 'Project exploratory item' },
+  { id: 'ai_r1', order: 24, section: 'attitude', construct: 'AI risk awareness', dimension: 'aiConcern', reverse: false, text: '我担心过度依赖 AI 会削弱独立思考。', source: 'Project exploratory item' },
+  { id: 'ai_r2', order: 25, section: 'attitude', construct: 'AI risk awareness', dimension: 'aiConcern', reverse: false, text: '我会关注 AI 输出中可能存在的错误或偏见。', source: 'Project exploratory item' },
+  { id: 'ai_r3', order: 26, section: 'attitude', construct: 'AI risk awareness', dimension: 'aiConcern', reverse: false, text: '我担心 AI 让作业或研究成果的原创性更难判断。', source: 'Project exploratory item' },
+  { id: 'ai_g1', order: 27, section: 'attitude', construct: 'Proactive AI use', dimension: 'aiAgency', reverse: false, text: '使用 AI 时，我会主动核查、改写或追问，而不是直接接受答案。', source: 'Project exploratory item' },
+  { id: 'ai_g2', order: 28, section: 'attitude', construct: 'Proactive AI use', dimension: 'aiAgency', reverse: true, text: '只要 AI 的回答看起来合理，我通常不会再验证。', source: 'Project exploratory item' },
+  { id: 'ai_g3', order: 29, section: 'attitude', construct: 'Proactive AI use', dimension: 'aiAgency', reverse: false, text: '我能根据任务目标给 AI 清晰说明背景、限制和评价标准。', source: 'Project exploratory item' },
+]
+
+export const dimensionMeta: Record<Dimension, DimensionMeta> = {
+  openness: { name: '开放性', shortName: '开放', description: '对新经验、新想法和多元观点的兴趣。', low: '本次回答显示你较偏好熟悉、清晰的做法。', high: '本次回答显示你较愿意探索未知与抽象想法。' },
+  conscientiousness: { name: '尽责性', shortName: '尽责', description: '计划、坚持、自我管理和完成任务的倾向。', low: '本次回答显示你较依赖情境推动，行动方式较灵活。', high: '本次回答显示你较重视计划、秩序和稳定执行。' },
+  extraversion: { name: '外向性', shortName: '外向', description: '从社交互动和外部刺激中获得能量的倾向。', low: '本次回答显示你较偏好安静环境和较慢的社交节奏。', high: '本次回答显示你较容易从交流和群体活动中获得能量。' },
+  agreeableness: { name: '宜人性', shortName: '宜人', description: '合作、共情和照顾他人感受的倾向。', low: '本次回答显示你较强调直接表达和立场清晰。', high: '本次回答显示你较关注关系、合作和他人的处境。' },
+  neuroticism: { name: '情绪敏感性', shortName: '情绪', description: '在压力下体验担心、紧张或情绪波动的倾向。', low: '本次回答显示你在压力下相对平稳。', high: '本次回答显示你对压力信号较为敏感。' },
+  aiBenefit: { name: 'AI 学习收益感', shortName: '收益', description: '认为 AI 能提升学习、研究和问题解决效率的程度。', low: '本次回答显示你对 AI 的实用价值仍持保留态度。', high: '本次回答显示你较认可 AI 对理解、创意和效率的帮助。' },
+  aiConcern: { name: 'AI 风险关注', shortName: '风险', description: '对 AI 依赖、偏见、错误和原创性问题的警觉程度。', low: '本次回答显示你使用 AI 时顾虑相对较少。', high: '本次回答显示你较关注验证、伦理和认知依赖风险。' },
+  aiAgency: { name: 'AI 主动使用能力', shortName: '主动', description: '主动设定目标、提示、核查和修正 AI 输出的倾向。', low: '本次回答显示你较容易把 AI 当作直接答案来源。', high: '本次回答显示你较倾向把 AI 当作需要管理和审查的协作工具。' },
+}
+
+export const dimensions = Object.keys(dimensionMeta) as Dimension[]

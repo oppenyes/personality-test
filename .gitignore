@@ -1,0 +1,20 @@
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Real environment configuration and local secrets
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+!.env.example
+
+# Editor and operating system files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
