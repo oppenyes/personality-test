@@ -1,4 +1,5 @@
 import { dimensions, questions } from "@/data/questions";
+import { assessDataQuality, type DataQualityResult } from "@/utils/dataQuality";
 import { scoreItem } from "@/utils/scoring";
 import type { AssessmentSession, DashboardData, Dimension } from "@/types";
 
@@ -73,11 +74,32 @@ export function correlation(left: number[], right: number[]): number | null {
     : null;
 }
 
-export function buildDashboardStats(data: DashboardData) {
+export function buildDashboardStats(
+  data: DashboardData,
+  options: { excludeLikelyInvalid?: boolean } = {},
+) {
   const sessions = data.sessions;
   const completed = sessions.filter((record) => record.status === "completed");
+  const qualityBySession = Object.fromEntries(
+    completed.map((record) => [
+      record.id,
+      assessDataQuality(record.answers, record.completionSeconds),
+    ]),
+  ) as Record<string, DataQualityResult>;
+  const qualitySummary = completed.reduce(
+    (summary, record) => {
+      summary[qualityBySession[record.id].level] += 1;
+      return summary;
+    },
+    { normal: 0, review: 0, likely_invalid: 0 },
+  );
+  const includedCompleted = options.excludeLikelyInvalid
+    ? completed.filter(
+        (record) => qualityBySession[record.id].level !== "likely_invalid",
+      )
+    : completed;
   const averages = dimensions.map((dimension) => {
-    const values = completed
+    const values = includedCompleted
       .map((record) => record.scores[dimension])
       .filter((score) => score > 0);
     return {
@@ -87,7 +109,7 @@ export function buildDashboardStats(data: DashboardData) {
     };
   });
   const items = questions.map((question) => {
-    const values = completed.flatMap((record) => {
+    const values = includedCompleted.flatMap((record) => {
       const answer = record.answers[question.id];
       return answer === undefined ? [] : [answer];
     });
@@ -99,7 +121,7 @@ export function buildDashboardStats(data: DashboardData) {
       ),
     };
   });
-  const feedbackRecords = completed.flatMap((record) =>
+  const feedbackRecords = includedCompleted.flatMap((record) =>
     record.feedback
       ? [
           {
@@ -123,17 +145,17 @@ export function buildDashboardStats(data: DashboardData) {
       feedbackRecords.map((feedback) => feedback.lengthAppropriate),
     ),
   };
-  const openness = completed.map((record) => record.scores.openness);
-  const benefit = completed.map((record) => record.scores.aiBenefit);
+  const openness = includedCompleted.map((record) => record.scores.openness);
+  const benefit = includedCompleted.map((record) => record.scores.aiBenefit);
 
   return {
     participantCount: sessions.length,
-    completedCount: completed.length,
+    completedCount: includedCompleted.length,
     completionRate: sessions.length
-      ? Number(((completed.length / sessions.length) * 100).toFixed(1))
+      ? Number(((includedCompleted.length / sessions.length) * 100).toFixed(1))
       : 0,
     averageCompletionSeconds: mean(
-      completed.flatMap((record) =>
+      includedCompleted.flatMap((record) =>
         record.completionSeconds === null ? [] : [record.completionSeconds],
       ),
     ),
@@ -141,10 +163,23 @@ export function buildDashboardStats(data: DashboardData) {
     items,
     feedbackAverages,
     feedbackRecords,
+    qualitySummary,
+    qualityBySession,
     correlation: correlation(openness, benefit),
-    correlationN: completed.length,
+    correlationN: includedCompleted.length,
     recent: [...sessions]
+      .filter(
+        (record) =>
+          !options.excludeLikelyInvalid ||
+          record.status !== "completed" ||
+          qualityBySession[record.id].level !== "likely_invalid",
+      )
       .sort((left, right) => right.startedAt.localeCompare(left.startedAt))
-      .slice(0, 10),
+      .slice(0, 10)
+      .map((record) => ({
+        ...record,
+        quality:
+          record.status === "completed" ? qualityBySession[record.id] : null,
+      })),
   };
 }

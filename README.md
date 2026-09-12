@@ -109,6 +109,20 @@ Vitest 测试位于 [src/utils/scoring.test.ts](E:/Desktop/9.12/personality-test
 
 仪表板保留 alpha 与开放性—AI 收益相关，但明确显示它们是 exploratory / unstable，尤其在少于 10 个完成样本时。它们不构成正式心理测量验证，也不支持因果解释。
 
+## Pilot 数据质量检查
+
+研究者后台会对已完成的 29 题作答做非破坏性的 pilot 数据质量标记，不会自动删除、隐藏或改写任何参与者数据。质量逻辑位于 src/utils/dataQuality.ts，检查：
+
+- 完成时间小于 60 秒。
+- 最长连续相同原始回答达到 15 题。
+- 单一选项占全部 29 题的比例达到 85%。
+- 全部原始回答的标准差小于 0.5。
+- questions.ts 中明确配置的正反向配对里，至少两对出现同时高同意或同时高不同意。
+
+每项触发规则计 1 个风险点：0–1 为 normal，2 为 review，3 或以上为 likely_invalid。仪表板会显示各等级数量、最近提交的触发原因，并提供 Exclude likely invalid 开关；该开关只从聚合统计排除 likely_invalid，保留 review。CSV/JSON 导出包含 quality_level、quality_score 与 quality_reasons。
+
+这些规则只能用于 pilot 阶段的数据质量筛查，不等同于正式心理测量研究中的无效作答识别，也不能证明参与者“故意乱填”。
+
 ## Pilot 评价流程
 
 1. 完成 Supabase 配置和部署。

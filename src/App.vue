@@ -19,6 +19,7 @@ import {
   submitFeedback,
 } from "@/services/assessmentRepository";
 import { buildDashboardStats } from "@/utils/analytics";
+import { assessDataQuality } from "@/utils/dataQuality";
 import { calculateDimensionScores, isComplete } from "@/utils/scoring";
 import type {
   AnswerMap,
@@ -56,6 +57,7 @@ const adminAuthorized = ref(false);
 const adminEmail = ref("");
 const adminPassword = ref("");
 const adminError = ref("");
+const excludeLikelyInvalid = ref(false);
 const personalityDimensions = [
   "openness",
   "conscientiousness",
@@ -77,7 +79,12 @@ const completionPercent = computed(() =>
 const complete = computed(() => isComplete(answers.value));
 const scores = computed(() => calculateDimensionScores(answers.value));
 const hasResult = computed(() => currentSession.value?.status === "completed");
-const dashboardStats = computed(() => buildDashboardStats(dashboard.value));
+const qualityStats = computed(() => buildDashboardStats(dashboard.value));
+const dashboardStats = computed(() =>
+  buildDashboardStats(dashboard.value, {
+    excludeLikelyInvalid: excludeLikelyInvalid.value,
+  }),
+);
 const adminUsesSupabase = computed(() => isSupabaseConfigured);
 const percent = (score: number) => String(((score - 1) / 4) * 100) + "%";
 
@@ -285,7 +292,7 @@ function download(filename: string, content: string, type: string) {
 function exportJson() {
   download(
     "assessment-pilot-export.json",
-    JSON.stringify(dashboard.value.sessions, null, 2),
+    JSON.stringify(exportableSessions(), null, 2),
     "application/json",
   );
 }
@@ -304,23 +311,35 @@ function exportCsv() {
     "length_appropriate",
     "confusing_part",
     "improvement",
+    "quality_level",
+    "quality_score",
+    "quality_reasons",
   ];
   const rows = dashboard.value.sessions.map((session) =>
-    [
-      session.id,
-      session.startedAt,
-      session.completedAt,
-      session.completionSeconds,
-      session.status,
-      ...questions.map((question) => session.answers[question.id]),
-      ...dimensions.map((dimension) => session.scores[dimension]),
-      session.feedback?.questionsClear,
-      session.feedback?.platformEasy,
-      session.feedback?.resultClear,
-      session.feedback?.lengthAppropriate,
-      session.feedback?.confusingPart,
-      session.feedback?.improvement,
-    ]
+    (() => {
+      const quality =
+        session.status === "completed"
+          ? assessDataQuality(session.answers, session.completionSeconds)
+          : null;
+      return [
+        session.id,
+        session.startedAt,
+        session.completedAt,
+        session.completionSeconds,
+        session.status,
+        ...questions.map((question) => session.answers[question.id]),
+        ...dimensions.map((dimension) => session.scores[dimension]),
+        session.feedback?.questionsClear,
+        session.feedback?.platformEasy,
+        session.feedback?.resultClear,
+        session.feedback?.lengthAppropriate,
+        session.feedback?.confusingPart,
+        session.feedback?.improvement,
+        quality?.level,
+        quality?.score,
+        quality?.reasons.join(" | "),
+      ];
+    })()
       .map(csvCell)
       .join(","),
   );
@@ -329,6 +348,20 @@ function exportCsv() {
     [headers.map(csvCell).join(","), ...rows].join("\n"),
     "text/csv;charset=utf-8",
   );
+}
+function exportableSessions() {
+  return dashboard.value.sessions.map((session) => {
+    const quality =
+      session.status === "completed"
+        ? assessDataQuality(session.answers, session.completionSeconds)
+        : null;
+    return {
+      ...session,
+      quality_level: quality?.level ?? null,
+      quality_score: quality?.score ?? null,
+      quality_reasons: quality?.reasons ?? [],
+    };
+  });
 }
 function formattedDate(value: string | null) {
   return value
@@ -701,6 +734,37 @@ onMounted(async () => {
             ><span>平均完成秒数</span>
           </article>
         </div>
+        <section class="admin-section data-quality-section">
+          <div class="quality-heading">
+            <div>
+              <h3>Data Quality</h3>
+              <p class="method-note">
+                仅用于 pilot 阶段的筛查标记，不会删除或修改参与者数据。
+              </p>
+            </div>
+            <label class="quality-filter">
+              <input v-model="excludeLikelyInvalid" type="checkbox" />
+              <span>Exclude likely invalid</span>
+            </label>
+          </div>
+          <div class="quality-summary">
+            <span class="quality-status normal"
+              >normal {{ qualityStats.qualitySummary.normal }}</span
+            >
+            <span class="quality-status review"
+              >review {{ qualityStats.qualitySummary.review }}</span
+            >
+            <span class="quality-status likely-invalid"
+              >likely_invalid
+              {{ qualityStats.qualitySummary.likely_invalid }}</span
+            >
+          </div>
+          <p v-if="excludeLikelyInvalid" class="method-note">
+            当前聚合统计已排除
+            {{ qualityStats.qualitySummary.likely_invalid }} 位 likely_invalid
+            参与者；review 仍被保留。
+          </p>
+        </section>
         <section class="admin-section">
           <h3>维度均值与探索性 alpha</h3>
           <p class="method-note">
@@ -791,12 +855,22 @@ onMounted(async () => {
           <h3>最近匿名提交</h3>
           <div class="submission-list">
             <article v-for="record in dashboardStats.recent" :key="record.id">
-              <strong>{{ record.id.slice(0, 8) }}</strong
-              ><span
-                >{{ formattedDate(record.completedAt ?? record.startedAt) }} ·
-                {{ record.status }} ·
-                {{ record.completionSeconds ?? "-" }} 秒</span
-              >
+              <div>
+                <strong>{{ record.id.slice(0, 8) }}</strong>
+                <span
+                  >{{ formattedDate(record.completedAt ?? record.startedAt) }} ·
+                  {{ record.status }} ·
+                  {{ record.completionSeconds ?? "-" }} 秒</span
+                >
+              </div>
+              <div v-if="record.quality" class="quality-record">
+                <span :class="['quality-status', record.quality.level]">
+                  {{ record.quality.level }} · {{ record.quality.score }}
+                </span>
+                <small>{{
+                  record.quality.reasons.join("；") || "未触发风险点"
+                }}</small>
+              </div>
             </article>
             <p v-if="!dashboardStats.recent.length" class="empty-state">
               还没有收集到数据。
