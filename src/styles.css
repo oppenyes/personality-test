@@ -18,8 +18,7 @@ body {
   margin: 0;
   background:
     linear-gradient(135deg, rgba(42, 107, 117, 0.14), transparent 34%),
-    linear-gradient(315deg, rgba(182, 76, 62, 0.12), transparent 38%),
-    #f4f0e8;
+    linear-gradient(315deg, rgba(182, 76, 62, 0.12), transparent 38%), #f4f0e8;
 }
 
 button,
@@ -520,6 +519,26 @@ p {
   padding: 12px;
   border-radius: 8px;
   background: #fff;
+}
+
+.feedback-notes article {
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.feedback-notes article header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #536166;
+  font-size: 14px;
+}
+
+.feedback-notes article p {
+  margin: 10px 0 0;
+  padding: 0;
+  border-radius: 0;
 }
 
 .dimension-card {
