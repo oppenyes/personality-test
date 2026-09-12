@@ -1,3 +1,8 @@
+# 项目网址
+
+公网：https://zhangshi-lab.vercel.app/
+国内访问：https://personality-test.edgeone.dev/
+
 # Agentic AI Web Assessment
 
 一个 Vue 3 + TypeScript + Vite 的匿名网页测评原型，服务于 Agentic AI Web Assessment Challenge。它测量 Big Five 人格倾向和与 AI 学习/研究相关的探索性态度，并提供研究者数据面板。
