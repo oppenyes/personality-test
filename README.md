@@ -1,11 +1,10 @@
-# 项目网址
-
-公网：https://zhangshi-lab.vercel.app/
-国内访问：https://personality-test.edgeone.dev/
-
 # Agentic AI Web Assessment
 
-一个 Vue 3 + TypeScript + Vite 的匿名网页测评原型，服务于 Agentic AI Web Assessment Challenge。它测量 Big Five 人格倾向和与 AI 学习/研究相关的探索性态度，并提供研究者数据面板。
+一个 Vue 3 + TypeScript + Vite 的匿名网页测评原型，服务于 Agentic AI Web Assessment Challenge。它提供匿名参与者测评、结果可视化、可选 pilot feedback，以及受研究者白名单保护的数据面板。
+
+- Live deployment: https://zhangshi-lab.vercel.app/
+- Admin route: `/#/admin`
+- 当前 README 曾记录一个 EdgeOne 临时预览链接；该链接标注为限时预览，不能视为长期正式部署地址。
 
 ## 测量内容
 
@@ -24,7 +23,7 @@ AI 态度部分是本项目自行编制的 9 道探索性题项；不将其描�
 
 参与者结果包含 Big Five 雷达图、AI 态度条形图及限定语气的解释，例如“本次回答显示……倾向”。结果仅供教育和研究探索，绝不构成心理、医学或临床诊断。
 
-## 架构
+## 架构概览
 
 - src/data/questions.ts：数据驱动题库（id、text、construct、dimension、reverse、order、source）。
 - src/utils/scoring.ts：独立评分、完成校验、题库完整性校验。
@@ -32,6 +31,8 @@ AI 态度部分是本项目自行编制的 9 道探索性题项；不将其描�
 - src/services/assessmentRepository.ts：Supabase 优先、localStorage 仅开发回退的数据层。
 - src/components/ChartPanel.vue：ECharts 图表容器。
 - src/App.vue：参与者流程、结果、反馈和受限研究者面板。
+
+参与者流程为：知情同意 -> Anonymous Auth -> 创建匿名 session -> 完成 29 道题 -> 计算并保存维度分数 -> 展示结果 -> 可选反馈。研究者流程为：以 Supabase Auth 登录 -> researchers 白名单授权 -> `/#/admin` 查看聚合统计与 CSV/JSON 导出。
 
 ## 隐私与知情同意
 
@@ -102,7 +103,7 @@ schema.sql 明确 REVOKE 了 anon/authenticated 的默认表权限，再仅向 a
 
 ## 测试与验证
 
-Vitest 测试位于 [src/utils/scoring.test.ts](E:/Desktop/9.12/personality-test/src/utils/scoring.test.ts)，覆盖：
+Vitest 测试位于 [src/utils/scoring.test.ts](./src/utils/scoring.test.ts) 与 [src/utils/dataQuality.test.ts](./src/utils/dataQuality.test.ts)，覆盖：
 
 - 正向与反向题的 5 -> 5、5 -> 1、1 -> 5、3 -> 3。
 - 维度均分。
@@ -111,6 +112,7 @@ Vitest 测试位于 [src/utils/scoring.test.ts](E:/Desktop/9.12/personality-test
 - 题目 ID、顺序和维度映射无重复/遗漏。
 - 每一个反向题都进入反向计分。
 - 完整结果范围为 1–5。
+- 五条 data-quality screening 规则及 normal/review/likely_invalid 分级。
 
 仪表板保留 alpha 与开放性—AI 收益相关，但明确显示它们是 exploratory / unstable，尤其在少于 10 个完成样本时。它们不构成正式心理测量验证，也不支持因果解释。
 
@@ -143,6 +145,15 @@ Vitest 测试位于 [src/utils/scoring.test.ts](E:/Desktop/9.12/personality-test
 - 对公开部署，应由研究者根据机构伦理要求审查知情同意、保留期限、删除流程和 Supabase RLS 策略。
 - 后续可加入经过许可的标准化中文题库、预注册分析计划、样本量设计和更细粒度的 researcher 权限。
 
+## 项目文档
+
+- [Technical Report](./TECHNICAL_REPORT.md)
+- [Pilot Evaluation](./PILOT_EVALUATION.md)
+- [AI Development Record](./AI_DEVELOPMENT_LOG.md)
+- [Scoring Verification](./SCORING_VERIFICATION.md)
+- [Deployment Notes](./DEPLOYMENT_NOTES.md)
+- [项目作者快速理解手册](./PROJECT_GUIDE_FOR_OWNER.md)
+
 ## AI 辅助开发
 
-见 [AI_DEVELOPMENT_LOG.md](E:/Desktop/9.12/personality-test/AI_DEVELOPMENT_LOG.md)。该日志区分本次实际观察到的问题与尚待人工审查的潜在风险。
+项目代码高度依赖 Codex / Agentic AI 开发。项目作者负责需求拆解与逐步细化、方案确认、Supabase 与部署配置、数据库 SQL 执行、Anonymous Auth 与 researcher 白名单配置、手工测试、检查 AI 输出、发现问题后的修正决策，以及 pilot 招募。详见 [AI Development Record](./AI_DEVELOPMENT_LOG.md)。
